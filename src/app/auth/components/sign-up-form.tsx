@@ -25,6 +25,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
+import { SocialLoginButtons } from '@/components/ui/social-login-buttons'
 import { toast } from 'sonner'
 
 const registerSchema = z.object({
@@ -58,13 +59,28 @@ export function SignUpForm() {
       )
     }
   }
-
   return (
     <Card>
       <CardHeader>
         <CardTitle>Registrar</CardTitle>
         <CardDescription>Crie uma nova conta.</CardDescription>
       </CardHeader>
+
+      <CardContent className="space-y-4">
+        <SocialLoginButtons />
+
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-background px-2 text-muted-foreground">
+              Ou continue com e-mail
+            </span>
+          </div>
+        </div>
+      </CardContent>
+
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)}>
           <CardContent className="space-y-2 pb-8">
@@ -116,7 +132,7 @@ export function SignUpForm() {
                   <FormMessage />
                 </FormItem>
               )}
-            />{' '}
+            />
           </CardContent>
           <CardFooter>
             <Button type="submit" className="w-full" disabled={isLoading}>
