@@ -1,8 +1,11 @@
 'use client'
 
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -22,6 +25,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
+import { authClient } from '@/lib/auth-client'
 
 const signInSchema = z.object({
   email: z.string().trim().email('E-mail inválido'),
@@ -29,6 +33,9 @@ const signInSchema = z.object({
 })
 
 export function SignInForm() {
+  const router = useRouter()
+  const [isLoading, setIsLoading] = useState(false)
+
   const form = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),
     defaultValues: {
@@ -36,9 +43,27 @@ export function SignInForm() {
       password: '',
     },
   })
+  async function handleSubmit(data: z.infer<typeof signInSchema>) {
+    setIsLoading(true)
 
-  function handleSubmit(data: z.infer<typeof signInSchema>) {
-    console.log('Sign in submitted:', data)
+    try {
+      const { data: result, error } = await authClient.signIn.email({
+        email: data.email,
+        password: data.password,
+      })
+
+      if (error) {
+        toast.error('E-mail ou senha incorretos')
+      } else if (result) {
+        toast.success('Login realizado com sucesso!')
+        router.push('/dashboard')
+      }
+    } catch (err) {
+      console.error('Erro no login:', err)
+      toast.error('Erro interno do servidor. Tente novamente.')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -85,11 +110,11 @@ export function SignInForm() {
                   <FormMessage />
                 </FormItem>
               )}
-            />
+            />{' '}
           </CardContent>
           <CardFooter>
-            <Button type="submit" className="w-full">
-              Entrar
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? 'Entrando...' : 'Entrar'}
             </Button>
           </CardFooter>
         </form>
