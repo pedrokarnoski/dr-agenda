@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { SignUpForm } from './components/sign-up-form'
 import { SignInForm } from './components/sign-in-form'
 import { authClient } from '@/lib/auth-client'
+import { Loader2 } from 'lucide-react'
 
 export default function AuthenticationPage() {
   const [isLoading, setIsLoading] = useState(true)
@@ -36,7 +37,7 @@ export default function AuthenticationPage() {
     return (
       <div className="flex items-center justify-center h-screen bg-gray-100">
         <div className="text-center">
-          <p>Carregando...</p>
+          <Loader2 className="animate-spin" />
         </div>
       </div>
     )

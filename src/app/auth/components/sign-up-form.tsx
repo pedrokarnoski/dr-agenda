@@ -1,11 +1,11 @@
 'use client'
 
-import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { LoaderCircle } from 'lucide-react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useRouter } from 'next/navigation'
+import { useAuth } from '@/lib/auth-context'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -25,7 +25,6 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
-import { authClient } from '@/lib/auth-client'
 import { toast } from 'sonner'
 
 const registerSchema = z.object({
@@ -36,7 +35,7 @@ const registerSchema = z.object({
 
 export function SignUpForm() {
   const router = useRouter()
-  const [isLoading, setIsLoading] = useState(false)
+  const { register, isLoading } = useAuth()
   const form = useForm<z.infer<typeof registerSchema>>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
@@ -47,26 +46,16 @@ export function SignUpForm() {
   })
 
   async function handleSubmit(data: z.infer<typeof registerSchema>) {
-    setIsLoading(true)
-
     try {
-      const { data: result, error } = await authClient.signUp.email({
-        name: data.name,
-        email: data.email,
-        password: data.password,
-      })
-
-      if (error) {
-        toast.error(error.message || 'Erro ao criar conta')
-      } else if (result) {
-        toast.success('Conta criada com sucesso!')
+      const success = await register(data.name, data.email, data.password)
+      if (success) {
         router.push('/dashboard')
       }
-    } catch (err) {
-      console.error('Erro no registro:', err)
-      toast.error('Erro interno do servidor. Tente novamente.')
-    } finally {
-      setIsLoading(false)
+    } catch (error) {
+      console.error('Erro ao registrar:', error)
+      toast.error(
+        'Problema ao criar conta. Verifique seus dados e tente novamente.'
+      )
     }
   }
 

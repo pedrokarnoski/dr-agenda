@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useRouter } from 'next/navigation'
-import { toast } from 'sonner'
+import { useAuth } from '@/lib/auth-context'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -25,7 +25,8 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
-import { authClient } from '@/lib/auth-client'
+import { toast } from 'sonner'
+import { LoaderCircle } from 'lucide-react'
 
 const signInSchema = z.object({
   email: z.string().trim().email('E-mail inválido'),
@@ -34,7 +35,7 @@ const signInSchema = z.object({
 
 export function SignInForm() {
   const router = useRouter()
-  const [isLoading, setIsLoading] = useState(false)
+  const { login, isLoading } = useAuth()
 
   const form = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),
@@ -43,26 +44,18 @@ export function SignInForm() {
       password: '',
     },
   })
+
   async function handleSubmit(data: z.infer<typeof signInSchema>) {
-    setIsLoading(true)
-
     try {
-      const { data: result, error } = await authClient.signIn.email({
-        email: data.email,
-        password: data.password,
-      })
-
-      if (error) {
-        toast.error('E-mail ou senha incorretos')
-      } else if (result) {
-        toast.success('Login realizado com sucesso!')
+      const success = await login(data.email, data.password)
+      if (success) {
         router.push('/dashboard')
       }
-    } catch (err) {
-      console.error('Erro no login:', err)
-      toast.error('Erro interno do servidor. Tente novamente.')
-    } finally {
-      setIsLoading(false)
+    } catch (error) {
+      console.error('Erro ao fazer login:', error)
+      toast.error(
+        'Problema ao fazer login. Verifique suas credenciais e tente novamente.'
+      )
     }
   }
 
@@ -114,7 +107,7 @@ export function SignInForm() {
           </CardContent>
           <CardFooter>
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? 'Entrando...' : 'Entrar'}
+              {isLoading ? <LoaderCircle className="animate-spin" /> : 'Entrar'}
             </Button>
           </CardFooter>
         </form>

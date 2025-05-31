@@ -1,44 +1,20 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { authClient } from '@/lib/auth-client'
+import { useAuth } from '@/lib/auth-context'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useRouter } from 'next/navigation'
-
-interface User {
-  id: string
-  name: string
-  email: string
-  emailVerified: boolean
-}
+import { Loader2 } from 'lucide-react'
 
 export default function DashboardPage() {
-  const [user, setUser] = useState<User | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
-
-  useEffect(() => {
-    const getSession = async () => {
-      try {
-        const { data: session } = await authClient.getSession()
-        if (session?.user) {
-          setUser(session.user as User)
-        }
-      } catch (error) {
-        console.error('Erro ao buscar sessão:', error)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    getSession()
-  }, [])
-
+  const { user, logout, isLoading } = useAuth()
   const handleLogout = async () => {
     try {
-      await authClient.signOut()
-      router.push('/auth')
+      const success = await logout()
+      if (success) {
+        router.push('/auth')
+      }
     } catch (error) {
       console.error('Erro ao fazer logout:', error)
     }
@@ -46,9 +22,9 @@ export default function DashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="flex h-full w-full items-center justify-center">
+      <div className="flex items-center justify-center h-screen">
         <div className="text-center">
-          <p>Carregando...</p>
+          <Loader2 className="animate-spin" />
         </div>
       </div>
     )
@@ -76,10 +52,9 @@ export default function DashboardPage() {
                 </p>
                 <p>
                   <strong>Email:</strong> {user.email}
-                </p>
+                </p>{' '}
                 <p>
-                  <strong>Email verificado:</strong>{' '}
-                  {user.emailVerified ? 'Sim' : 'Não'}
+                  <strong>Função:</strong> {user.role}
                 </p>
               </div>
             )}

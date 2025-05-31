@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { authClient } from '@/lib/auth-client'
+import { Loader2 } from 'lucide-react'
 
 export default function Home() {
   const router = useRouter()
@@ -29,9 +30,9 @@ export default function Home() {
   }, [router])
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
+    <div className="flex items-center justify-center h-screen">
       <div className="text-center">
-        <p>Redirecionando...</p>
+        <Loader2 className="animate-spin" />
       </div>
     </div>
   )
