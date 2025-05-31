@@ -19,7 +19,7 @@ export const usersTable = pgTable('users', {
     .notNull(),
   image: text('image'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('created_at')
+  updatedAt: timestamp('updated_at')
     .defaultNow()
     .$onUpdate(() => new Date()),
 })
@@ -52,7 +52,7 @@ export const accountsTable = pgTable('accounts', {
   scope: text('scope'),
   password: text('password'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('created_at')
+  updatedAt: timestamp('updated_at')
     .defaultNow()
     .$onUpdate(() => new Date()),
 })
@@ -63,7 +63,7 @@ export const verificationsTable = pgTable('verifications', {
   value: text('value').notNull(),
   expiresAt: timestamp('expires_at').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('created_at')
+  updatedAt: timestamp('updated_at')
     .defaultNow()
     .$onUpdate(() => new Date()),
 })

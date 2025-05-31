@@ -1,8 +1,11 @@
 'use client'
 
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { LoaderCircle } from 'lucide-react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { useRouter } from 'next/navigation'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -22,6 +25,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
+import { authClient } from '@/lib/auth-client'
 
 const registerSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
@@ -30,6 +34,11 @@ const registerSchema = z.object({
 })
 
 export function SignUpForm() {
+  const router = useRouter()
+
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
   const form = useForm<z.infer<typeof registerSchema>>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
@@ -38,9 +47,28 @@ export function SignUpForm() {
       password: '',
     },
   })
+  async function handleSubmit(data: z.infer<typeof registerSchema>) {
+    setIsLoading(true)
+    setError(null)
 
-  function handleSubmit(data: z.infer<typeof registerSchema>) {
-    console.log('Form submitted:', data)
+    try {
+      const { data: result, error } = await authClient.signUp.email({
+        name: data.name,
+        email: data.email,
+        password: data.password,
+      })
+
+      if (error) {
+        setError(error.message || 'Erro ao criar conta')
+      } else if (result) {
+        router.push('/dashboard')
+      }
+    } catch (err) {
+      console.error('Erro no registro:', err)
+      setError('Erro interno do servidor. Tente novamente.')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -100,11 +128,20 @@ export function SignUpForm() {
                   <FormMessage />
                 </FormItem>
               )}
-            />
+            />{' '}
           </CardContent>
+          {error && (
+            <div className="px-6 pb-4">
+              <p className="text-sm text-red-600">{error}</p>
+            </div>
+          )}
           <CardFooter>
-            <Button type="submit" className="w-full">
-              Registrar
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? (
+                <LoaderCircle className="animate-spin" />
+              ) : (
+                'Criar conta'
+              )}
             </Button>
           </CardFooter>
         </form>
